@@ -1,0 +1,30 @@
+<RCC>
+    <qresource prefix="/">
+        <!-- Pieces -->
+        <file alias="b_pawn.svg">../assets/b_pawn.svg</file>
+        <file alias="b_knight.svg">../assets/b_knight.svg</file>
+        <file alias="b_bishop.svg">../assets/b_bishop.svg</file>
+        <file alias="b_rook.svg">../assets/b_rook.svg</file>
+        <file alias="b_queen.svg">../assets/b_queen.svg</file>
+        <file alias="b_king.svg">../assets/b_king.svg</file>
+
+        <file alias="w_pawn.svg">../assets/w_pawn.svg</file>
+        <file alias="w_knight.svg">../assets/w_knight.svg</file>
+        <file alias="w_bishop.svg">../assets/w_bishop.svg</file>
+        <file alias="w_rook.svg">../assets/w_rook.svg</file>
+        <file alias="w_queen.svg">../assets/w_queen.svg</file>
+        <file alias="w_king.svg">../assets/w_king.svg</file>
+
+        <!-- Squares -->
+        <file alias="black_sq.svg">../assets/black_sq.svg</file>
+        <file alias="white_sq.svg">../assets/white_sq.svg</file>
+        <file alias="black_sq_move.svg">../assets/black_sq_move.svg</file>
+        <file alias="white_sq_move.svg">../assets/white_sq_move.svg</file>
+        <file alias="black_sq_select.svg">../assets/black_sq_select.svg</file>
+        <file alias="white_sq_select.svg">../assets/white_sq_select.svg</file>
+
+        <!-- Board -->
+        <file alias="board.svg">../assets/board.svg</file>
+        <file alias="board_backdrop.svg">../assets/board_backdrop.svg</file>
+    </qresource>
+</RCC>

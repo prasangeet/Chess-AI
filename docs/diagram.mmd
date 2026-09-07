@@ -1,0 +1,303 @@
+classDiagram
+    %% =====================================================
+    %% CORE VALUE TYPES
+    %% =====================================================
+
+    class Position {
+        -int row_
+        -int col_
+        +Position(int row, int col)
+        +int row() const
+        +int col() const
+        +bool isValid() const
+        +bool operator==(const Position&) const
+    }
+
+    class Color {
+        <<enumeration>>
+        White
+        Black
+    }
+
+    class PieceType {
+        <<enumeration>>
+        Pawn
+        Knight
+        Bishop
+        Rook
+        Queen
+        King
+    }
+
+
+    %% =====================================================
+    %% PIECE HIERARCHY
+    %% =====================================================
+
+    class Piece {
+        <<abstract>>
+        -Color color_
+        -PieceType pieceType_
+        +Piece(Color, PieceType)
+        +virtual ~Piece()
+        +Color color() const
+        +PieceType pieceType() const
+        +virtual vector~Position~ validMoves(const Board&, const Position&) const*
+    }
+
+    class Pawn {
+        +Pawn(Color)
+        +vector~Position~ validMoves(const Board&, const Position&) const
+    }
+
+    class Knight {
+        +Knight(Color)
+        +vector~Position~ validMoves(const Board&, const Position&) const
+    }
+
+    class Bishop {
+        +Bishop(Color)
+        +vector~Position~ validMoves(const Board&, const Position&) const
+    }
+
+    class Rook {
+        +Rook(Color)
+        +vector~Position~ validMoves(const Board&, const Position&) const
+    }
+
+    class Queen {
+        +Queen(Color)
+        +vector~Position~ validMoves(const Board&, const Position&) const
+    }
+
+    class King {
+        +King(Color)
+        +vector~Position~ validMoves(const Board&, const Position&) const
+    }
+
+    Piece <|-- Pawn
+    Piece <|-- Knight
+    Piece <|-- Bishop
+    Piece <|-- Rook
+    Piece <|-- Queen
+    Piece <|-- King
+
+
+    %% =====================================================
+    %% FACTORY
+    %% =====================================================
+
+    class PieceFactory {
+        <<utility>>
+        +static unique_ptr~Piece~ createPiece(PieceType, Color)
+    }
+
+    PieceFactory ..> Piece
+    PieceFactory ..> Pawn
+    PieceFactory ..> Knight
+    PieceFactory ..> Bishop
+    PieceFactory ..> Rook
+    PieceFactory ..> Queen
+    PieceFactory ..> King
+
+
+    %% =====================================================
+    %% BOARD
+    %% =====================================================
+
+    class Board {
+        -static constexpr int BoardSize
+        -array~array~unique_ptr~Piece~~8~~8~ cells_
+        +Board()
+        +~Board()
+        +Piece* pieceAt(Position)
+        +const Piece* pieceAt(Position) const
+        +void setPiece(Position, unique_ptr~Piece~)
+        +unique_ptr~Piece~ removePiece(Position)
+        +bool movePiece(Position, Position)
+        +void clear()
+        +void setUpInitialPosition()
+    }
+
+    Board *-- Piece : owns
+    Board ..> Position
+    Board ..> PieceFactory
+
+
+    %% =====================================================
+    %% MOVE
+    %% =====================================================
+
+    class Move {
+        -Position from_
+        -Position to_
+        +Move(Position from, Position to)
+        +Position from() const
+        +Position to() const
+    }
+
+    Move --> Position
+
+
+    %% =====================================================
+    %% GAME
+    %% =====================================================
+
+    class Game {
+        -Board board_
+        -Color currentTurn_
+        +Game()
+        +Board& board()
+        +const Board& board() const
+        +Color currentTurn() const
+        +vector~Move~ legalMoves(Position)
+        +bool makeMove(Position, Position)
+        +void undo()
+        +void redo()
+    }
+
+    Game *-- Board
+    Game ..> Move
+    Game ..> Color
+
+
+    %% =====================================================
+    %% RULES / VALIDATION
+    %% =====================================================
+
+    class MoveValidator {
+        <<service>>
+        +vector~Move~ legalMoves(const Game&, Position)
+        +bool isLegalMove(const Game&, const Move&)
+        +bool leavesKingInCheck(const Game&, const Move&)
+    }
+
+    class GameRules {
+        <<service>>
+        +bool isInCheck(const Board&, Color)
+        +bool isCheckmate(const Game&, Color)
+        +bool isStalemate(const Game&, Color)
+        +bool isSquareAttacked(const Board&, Position, Color)
+    }
+
+    MoveValidator ..> Game
+    MoveValidator ..> Move
+    MoveValidator ..> Board
+    GameRules ..> Board
+    GameRules ..> Color
+    GameRules ..> Position
+
+
+    %% =====================================================
+    %% MOVE HISTORY
+    %% =====================================================
+
+    class MoveCommand {
+        -Move move_
+        -unique_ptr~Piece~ capturedPiece_
+        +MoveCommand(Move)
+        +void execute(Board&)
+        +void undo(Board&)
+    }
+
+    class MoveHistory {
+        -vector~unique_ptr~MoveCommand~~ undoStack_
+        -vector~unique_ptr~MoveCommand~~ redoStack_
+        +void execute(unique_ptr~MoveCommand~, Board&)
+        +void undo(Board&)
+        +void redo(Board&)
+        +bool canUndo() const
+        +bool canRedo() const
+    }
+
+    MoveCommand *-- Move
+    MoveHistory *-- MoveCommand
+    MoveCommand ..> Board
+
+
+    %% =====================================================
+    %% CONTROLLER
+    %% =====================================================
+
+    class GameController {
+        <<QObject>>
+        -Game game_
+        -hasSelection_
+
+        +GameController(QObject*)
+        +void selectSquare(Position)
+        +void makeMove(Position, Position)
+        +void undo()
+        +void redo()
+        +void resetGame()
+        +signals boardChanged()
+        +signals moveMade(Move)
+    }
+
+    GameController *-- Game
+    GameController ..> Position
+    GameController ..> Move
+
+
+    %% =====================================================
+    %% QT UI
+    %% =====================================================
+
+    class MainWindow {
+        <<QMainWindow>>
+        -Ui::MainWindow* ui_
+        +MainWindow(QWidget*)
+        +~MainWindow()
+    }
+
+    class ChessBoardWidget {
+        <<QGraphicsView>>
+        -QGraphicsScene* scene_
+        -Board* board_
+        +ChessBoardWidget(QWidget*)
+        +void setBoard(Board&)
+        +void loadBoard()
+        +void loadPieces()
+        +void resizeEvent(QResizeEvent*)
+    }
+
+    class ChessPieceItem {
+        <<QGraphicsSvgItem>>
+        -const Piece* piece_
+        +ChessPieceItem(const Piece*, QGraphicsItem*)
+        +const Piece* piece() const
+        +static QString assetPath(const Piece&)
+    }
+
+    MainWindow --> ChessBoardWidget
+    MainWindow --> GameController
+
+    ChessBoardWidget --> Board
+    ChessBoardWidget *-- ChessPieceItem
+    ChessPieceItem --> Piece
+
+
+    %% =====================================================
+    %% QT RESOURCES
+    %% =====================================================
+
+    class QtResources {
+        <<resource>>
+        board.svg
+        board_backdrop.svg
+        w_pawn.svg
+        w_knight.svg
+        w_bishop.svg
+        w_rook.svg
+        w_queen.svg
+        w_king.svg
+        b_pawn.svg
+        b_knight.svg
+        b_bishop.svg
+        b_rook.svg
+        b_queen.svg
+        b_king.svg
+    }
+
+    ChessPieceItem ..> QtResources
+    ChessBoardWidget ..> QtResources

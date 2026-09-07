@@ -1,0 +1,6 @@
+CompileFlags:
+  Remove:
+    - -mno-direct-extern-access
+
+  Add:
+    - -I/mnt/volume/Projects/Chess/build/ChessAI_autogen/include
